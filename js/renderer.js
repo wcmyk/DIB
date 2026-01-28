@@ -2,7 +2,7 @@
 // Handles all canvas drawing for overworld, battle, and UI.
 
 import {
-  TILE_SIZE, MAP_COLS, MAP_ROWS,
+  TILE_SIZE,
   TERRAIN, TERRAIN_COLORS, ENEMY_DEFS,
   ITEM_DEFS, PLAYER_RADIUS, GRID_SIZE,
 } from './config.js';
@@ -196,110 +196,21 @@ export const Renderer = {
     const p = WorldState.player;
     const region = MapData.regionAt(p.x, p.y);
 
-    // HUD background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(8, 8, 220, 100);
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(8, 8, 220, 100);
-
+    // Region label
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(8, 8, 240, 28);
+    ctx.fillStyle = '#ccc';
     ctx.font = '13px monospace';
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-
-    // HP bar
-    ctx.fillStyle = '#aaa';
-    ctx.fillText(`HP`, 16, 16);
-    ctx.fillStyle = '#333';
-    ctx.fillRect(44, 16, 120, 12);
-    const hpRatio = p.hp / p.maxHp;
-    ctx.fillStyle = hpRatio > 0.5 ? '#4c4' : hpRatio > 0.25 ? '#cc4' : '#c44';
-    ctx.fillRect(44, 16, 120 * hpRatio, 12);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(`${Math.ceil(p.hp)}/${p.maxHp}`, 170, 16);
-
-    // Stamina bar
-    ctx.fillStyle = '#aaa';
-    ctx.fillText(`SP`, 16, 34);
-    ctx.fillStyle = '#333';
-    ctx.fillRect(44, 34, 120, 12);
-    ctx.fillStyle = '#4ac';
-    ctx.fillRect(44, 34, 120 * (p.stamina / p.maxStamina), 12);
-
-    // Level and XP
-    ctx.fillStyle = '#ff4';
-    ctx.fillText(`Lv.${p.level}`, 16, 54);
-    ctx.fillStyle = '#aaa';
-    ctx.fillText(`XP: ${p.xp}/${p.xpToNext}`, 70, 54);
-
-    // Gold
-    ctx.fillStyle = '#fd2';
-    ctx.fillText(`Gold: ${p.gold}`, 16, 72);
-
-    // Region name
-    ctx.fillStyle = '#ccc';
-    ctx.fillText(region ? region.name : 'Wilderness', 16, 90);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(region ? region.name : 'Wilderness', 16, 22);
 
     // Controls hint (bottom)
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(8, _canvas.height - 30, 320, 24);
+    ctx.fillRect(8, _canvas.height - 30, 360, 24);
     ctx.fillStyle = '#888';
     ctx.font = '11px monospace';
-    ctx.fillText('Movement locked  |  I: Inventory', 14, _canvas.height - 22);
-
-    // Minimap
-    this._drawMinimap(ctx);
-  },
-
-  _drawMinimap(ctx) {
-    const mmW = 140;
-    const mmH = 105;
-    const mmX = _canvas.width - mmW - 10;
-    const mmY = 10;
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(mmX, mmY, mmW, mmH);
-    ctx.strokeStyle = '#555';
-    ctx.strokeRect(mmX, mmY, mmW, mmH);
-
-    // Sample map at lower resolution
-    const sampleStep = 4;
-    const pixW = mmW / (MAP_COLS / sampleStep);
-    const pixH = mmH / (MAP_ROWS / sampleStep);
-    for (let r = 0; r < MAP_ROWS; r += sampleStep) {
-      for (let c = 0; c < MAP_COLS; c += sampleStep) {
-        const terrain = MapData.tiles[r]?.[c];
-        if (terrain === undefined || terrain === TERRAIN.WATER) continue;
-        ctx.fillStyle = TERRAIN_COLORS[terrain];
-        ctx.fillRect(
-          mmX + (c / MAP_COLS) * mmW,
-          mmY + (r / MAP_ROWS) * mmH,
-          pixW + 0.5, pixH + 0.5,
-        );
-      }
-    }
-
-    // Player dot
-    const p = WorldState.player;
-    ctx.fillStyle = '#ff0';
-    ctx.beginPath();
-    ctx.arc(
-      mmX + (p.x / (MAP_COLS * TILE_SIZE)) * mmW,
-      mmY + (p.y / (MAP_ROWS * TILE_SIZE)) * mmH,
-      3, 0, Math.PI * 2,
-    );
-    ctx.fill();
-
-    // Enemy dots
-    ctx.fillStyle = '#f44';
-    for (const enemy of WorldState.enemies) {
-      if (!enemy.alive) continue;
-      ctx.fillRect(
-        mmX + (enemy.x / (MAP_COLS * TILE_SIZE)) * mmW - 1,
-        mmY + (enemy.y / (MAP_ROWS * TILE_SIZE)) * mmH - 1,
-        2, 2,
-      );
-    }
+    ctx.fillText('Movement locked  |  C: Character  |  T: Teams  |  +/-: Zoom', 14, _canvas.height - 22);
   },
 
   // ═══════════════════════════════════════════
@@ -705,14 +616,15 @@ export const Renderer = {
   },
 
   // ═══════════════════════════════════════════
-  // INVENTORY SCREEN
+  // CHARACTER SCREEN
   // ═══════════════════════════════════════════
 
-  drawInventory(selectedIndex) {
+  drawCharacter(selectedCityIndex) {
     const ctx = _ctx;
     const w = _canvas.width;
     const h = _canvas.height;
     const p = WorldState.player;
+    const cities = WorldState.unlockedCities.map(id => MapData.regionById(id)).filter(Boolean);
 
     // Dim background
     ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
@@ -734,7 +646,7 @@ export const Renderer = {
     ctx.fillStyle = '#ff4';
     ctx.font = 'bold 18px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('INVENTORY', w / 2, py + 28);
+    ctx.fillText('CHARACTER', w / 2, py + 28);
 
     // Stats
     ctx.font = '14px monospace';
@@ -754,15 +666,26 @@ export const Renderer = {
       for (let i = 0; i < p.inventory.length; i++) {
         const slot = p.inventory[i];
         const def = ITEM_DEFS[slot.itemId];
-        const isSelected = i === selectedIndex;
-        ctx.fillStyle = isSelected ? '#ff4' : '#ccc';
-        const prefix = isSelected ? '> ' : '  ';
-        ctx.fillText(`${prefix}${def ? def.name : slot.itemId} x${slot.qty}`, px + 20, py + 134 + i * 22);
+        ctx.fillStyle = '#ccc';
+        ctx.fillText(`  ${def ? def.name : slot.itemId} x${slot.qty}`, px + 20, py + 134 + i * 22);
+      }
+    }
 
-        if (isSelected && def) {
-          ctx.fillStyle = '#888';
-          ctx.fillText(`  ${def.desc}`, px + 20, py + 134 + (p.inventory.length) * 22 + 20);
-        }
+    // Teleport cities
+    const citiesStartY = py + 220;
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('Teleport Cities:', px + 20, citiesStartY);
+
+    if (cities.length === 0) {
+      ctx.fillStyle = '#666';
+      ctx.fillText('  (none unlocked)', px + 20, citiesStartY + 24);
+    } else {
+      for (let i = 0; i < cities.length; i++) {
+        const city = cities[i];
+        const isSelected = i === selectedCityIndex;
+        ctx.fillStyle = isSelected ? '#6cf' : '#ccc';
+        const prefix = isSelected ? '> ' : '  ';
+        ctx.fillText(`${prefix}${city.name}`, px + 20, citiesStartY + 24 + i * 20);
       }
     }
 
@@ -770,7 +693,75 @@ export const Renderer = {
     ctx.fillStyle = '#555';
     ctx.font = '12px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('I or Esc: Close  |  W/S: Navigate', w / 2, py + panelH - 16);
+    ctx.fillText('C or Esc: Close  |  W/S: Select City  |  Enter: Teleport', w / 2, py + panelH - 16);
+  },
+
+  // ═══════════════════════════════════════════
+  // TEAMS SCREEN
+  // ═══════════════════════════════════════════
+
+  drawTeams() {
+    const ctx = _ctx;
+    const w = _canvas.width;
+    const h = _canvas.height;
+
+    // Dim background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, w, h);
+
+    // Panel
+    const panelW = 420;
+    const panelH = 360;
+    const px = (w - panelW) / 2;
+    const py = (h - panelH) / 2;
+
+    ctx.fillStyle = 'rgba(20, 20, 40, 0.95)';
+    ctx.fillRect(px, py, panelW, panelH);
+    ctx.strokeStyle = '#668';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(px, py, panelW, panelH);
+
+    ctx.fillStyle = '#6cf';
+    ctx.font = 'bold 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('TEAMS', w / 2, py + 32);
+
+    ctx.fillStyle = '#aaa';
+    ctx.font = '14px monospace';
+    ctx.fillText('Team management coming soon.', w / 2, py + 90);
+
+    ctx.fillStyle = '#555';
+    ctx.font = '12px monospace';
+    ctx.fillText('T or Esc: Close', w / 2, py + panelH - 18);
+  },
+
+  _drawGrid(ctx, cam) {
+    const startX = Math.floor(cam.x / GRID_SIZE) * GRID_SIZE;
+    const endX = cam.x + cam.width;
+    const startY = Math.floor(cam.y / GRID_SIZE) * GRID_SIZE;
+    const endY = cam.y + cam.height;
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 1;
+
+    for (let x = startX; x <= endX; x += GRID_SIZE) {
+      const sx = x - cam.x;
+      ctx.beginPath();
+      ctx.moveTo(sx, 0);
+      ctx.lineTo(sx, cam.height);
+      ctx.stroke();
+    }
+
+    for (let y = startY; y <= endY; y += GRID_SIZE) {
+      const sy = y - cam.y;
+      ctx.beginPath();
+      ctx.moveTo(0, sy);
+      ctx.lineTo(cam.width, sy);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   },
 
   _drawGrid(ctx, cam) {

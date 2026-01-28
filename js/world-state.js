@@ -16,11 +16,13 @@ export const WorldState = {
   enemies: [],    // active enemies on the overworld
   time: 0,        // world clock in seconds
   worldFlags: {}, // quest/camp cleared flags
+  unlockedCities: [],
+  cameraTarget: null,
   _respawnTimers: [], // { regionId, enemyType, respawnAt }
 
   /** Initialize fresh game state */
   init() {
-    const startRegion = REGIONS.find(r => r.id === 'village_start');
+    const startRegion = REGIONS.find(r => r.id === 'mondstadt');
     const startX = (startRegion.x + startRegion.w / 2) * TILE_SIZE;
     const startY = (startRegion.y + startRegion.h / 2) * TILE_SIZE;
 
@@ -53,7 +55,11 @@ export const WorldState = {
     this.enemies = [];
     this.time = 0;
     this.worldFlags = {};
+    this.unlockedCities = [];
+    this.cameraTarget = { x: startX, y: startY };
     this._respawnTimers = [];
+
+    this.unlockCity(startRegion);
 
     // Spawn initial enemies in all regions
     this._spawnInitialEnemies();
@@ -120,6 +126,32 @@ export const WorldState = {
         this._respawnTimers.splice(i, 1);
       }
     }
+  },
+
+  /** Unlock a city region for teleport */
+  unlockCity(region) {
+    if (!region?.city) return false;
+    if (this.unlockedCities.includes(region.id)) return false;
+    this.unlockedCities.push(region.id);
+    return true;
+  },
+
+  /** Unlock city at player position if applicable */
+  unlockCityAtPlayer() {
+    const region = MapData.regionAt(this.player.x, this.player.y);
+    if (region) {
+      this.unlockCity(region);
+    }
+    return region;
+  },
+
+  /** Teleport player to a city center */
+  teleportToCity(regionId) {
+    const region = MapData.regionById(regionId);
+    if (!region) return;
+    this.player.x = (region.x + region.w / 2) * TILE_SIZE;
+    this.player.y = (region.y + region.h / 2) * TILE_SIZE;
+    this.cameraTarget = { x: this.player.x, y: this.player.y };
   },
 
   /** Simple wander AI for an enemy */
@@ -234,7 +266,7 @@ export const WorldState = {
 
   /** Respawn player at village after defeat */
   _respawnPlayer() {
-    const startRegion = REGIONS.find(r => r.id === 'village_start');
+    const startRegion = REGIONS.find(r => r.id === 'mondstadt');
     this.player.x = (startRegion.x + startRegion.w / 2) * TILE_SIZE;
     this.player.y = (startRegion.y + startRegion.h / 2) * TILE_SIZE;
     this.player.hp = Math.floor(this.player.maxHp * 0.5);

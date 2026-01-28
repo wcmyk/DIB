@@ -20,6 +20,8 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: #000;
+  transform-origin: center center;
+  transform: scale(var(--game-zoom, 1));
 }
 
 /* ── Map iframe (background layer) ── */

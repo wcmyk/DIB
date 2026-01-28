@@ -59,8 +59,8 @@ export const TERRAIN_WALKABLE = {
 // Each region is a rectangular area on the map with properties
 export const REGIONS = [
   {
-    id: 'village_start',
-    name: 'Starter Village',
+    id: 'mondstadt',
+    name: 'Mondstadt',
     terrain: TERRAIN.VILLAGE,
     x: 50, y: 38, w: 20, h: 14,
     dangerLevel: 0,
@@ -68,6 +68,19 @@ export const REGIONS = [
     enemies: [],
     maxEnemies: 0,
     safe: true,
+    city: true,
+  },
+  {
+    id: 'liyue_harbor',
+    name: 'Liyue Harbor',
+    terrain: TERRAIN.VILLAGE,
+    x: 85, y: 42, w: 16, h: 12,
+    dangerLevel: 0,
+    randomEncounterChance: 0,
+    enemies: [],
+    maxEnemies: 0,
+    safe: true,
+    city: true,
   },
   {
     id: 'plains_south',

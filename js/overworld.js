@@ -84,6 +84,11 @@ export const Overworld = {
   update(dt) {
     this._movePlayer(dt);
     WorldState.update(dt);
+    WorldState.unlockCityAtPlayer();
+    if (WorldState.cameraTarget) {
+      Camera.follow(WorldState.cameraTarget.x, WorldState.cameraTarget.y);
+      WorldState.cameraTarget = null;
+    }
     IframeParallax.update();
   },
 
@@ -93,7 +98,6 @@ export const Overworld = {
     if (!OVERWORLD_MOVEMENT_ENABLED) {
       p.vx = 0;
       p.vy = 0;
-      Camera.follow(p.x, p.y);
       return;
     }
     const dir = Input.direction();

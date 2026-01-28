@@ -113,7 +113,7 @@ export const MapData = {
 
   /** Add some structure to the village */
   _addVillageDetails(rng) {
-    const region = REGIONS.find(r => r.id === 'village_start');
+    const region = REGIONS.find(r => r.id === 'mondstadt');
     if (!region) return;
     // Place a few "building" tiles (using mountain as impassable for simplicity)
     const buildings = [
