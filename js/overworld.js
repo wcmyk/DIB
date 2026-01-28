@@ -36,15 +36,21 @@ export const Camera = {
 /** Manages the background map iframe parallax effect */
 export const IframeParallax = {
   _iframe: null,
+  _interactive: false,
 
   /** Store reference to the iframe element */
   init(iframe) {
     this._iframe = iframe;
+    this._interactive = iframe?.dataset?.interactive === 'true';
+    if (this._interactive && this._iframe) {
+      this._iframe.style.transform = 'translate(0, 0)';
+    }
   },
 
   /** Update iframe CSS transform to create parallax as player moves */
   update() {
     if (!this._iframe) return;
+    if (this._interactive) return;
     const p = WorldState.player;
 
     // Normalize player position to -0.5 … +0.5 range
