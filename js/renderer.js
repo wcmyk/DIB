@@ -38,32 +38,8 @@ export const Renderer = {
     const ctx = _ctx;
     const cam = Camera;
 
+    // Clear to transparent — the Genshin map iframe shows through behind us
     ctx.clearRect(0, 0, _canvas.width, _canvas.height);
-
-    // Background (water color for areas outside map)
-    ctx.fillStyle = TERRAIN_COLORS[TERRAIN.WATER];
-    ctx.fillRect(0, 0, _canvas.width, _canvas.height);
-
-    // Determine visible tile range
-    const startCol = Math.max(0, Math.floor(cam.x / TILE_SIZE));
-    const startRow = Math.max(0, Math.floor(cam.y / TILE_SIZE));
-    const endCol = Math.min(MAP_COLS, Math.ceil((cam.x + cam.width) / TILE_SIZE) + 1);
-    const endRow = Math.min(MAP_ROWS, Math.ceil((cam.y + cam.height) / TILE_SIZE) + 1);
-
-    // Draw tiles
-    for (let r = startRow; r < endRow; r++) {
-      for (let c = startCol; c < endCol; c++) {
-        const terrain = MapData.tiles[r][c];
-        const sx = c * TILE_SIZE - cam.x;
-        const sy = r * TILE_SIZE - cam.y;
-
-        ctx.fillStyle = TERRAIN_COLORS[terrain] || '#000';
-        ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
-
-        // Add details per terrain type
-        this._drawTileDetail(ctx, terrain, sx, sy, c, r);
-      }
-    }
 
     // Draw enemies
     for (const enemy of WorldState.enemies) {

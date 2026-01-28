@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate HTML
-        uses: nicerloop/action-html5-validator@master
+        uses: Cyb3r-Jak3/html5validator-action@v2
         with:
           root: '.'
 

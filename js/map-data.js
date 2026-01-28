@@ -142,17 +142,11 @@ export const MapData = {
     return _tiles[row][col];
   },
 
-  /** Check if pixel position is walkable */
+  /** Check if pixel position is walkable (all in-bounds terrain is walkable) */
   isWalkable(px, py) {
-    const terrain = this.terrainAt(px, py);
-    return !!({
-      [TERRAIN.PLAINS]: true,
-      [TERRAIN.FOREST]: true,
-      [TERRAIN.DESERT]: true,
-      [TERRAIN.SWAMP]: true,
-      [TERRAIN.VILLAGE]: true,
-      [TERRAIN.PATH]: true,
-    })[terrain];
+    const col = Math.floor(px / TILE_SIZE);
+    const row = Math.floor(py / TILE_SIZE);
+    return row >= 0 && row < MAP_ROWS && col >= 0 && col < MAP_COLS;
   },
 
   /** Get region at pixel position (or null) */

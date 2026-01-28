@@ -15,20 +15,41 @@ html, body {
 }
 
 #game-container {
+  position: relative;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   background: #000;
 }
 
+/* ── Map iframe (background layer) ── */
+#map-iframe {
+  position: absolute;
+  /* Oversized: 300% in each dimension so we can shift it for parallax */
+  width: 300%;
+  height: 300%;
+  top: -100%;
+  left: -100%;
+  border: 0;
+  z-index: 0;
+  pointer-events: none; /* game canvas handles all interaction */
+  transition: opacity 0.4s;
+}
+
+#map-iframe.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Game canvas (overlay layer) ── */
 #game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
   display: block;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
 }
 
 /* Loading / splash screen */

@@ -1,11 +1,10 @@
 // ── Overworld Scene ──
-// Handles player movement, camera, and overworld logic.
+// Handles player movement, camera, iframe parallax, and overworld logic.
 
 import {
   TILE_SIZE, MAP_WIDTH, MAP_HEIGHT,
   PLAYER_SPEED, PLAYER_SPRINT_SPEED,
   STAMINA_DRAIN, STAMINA_REGEN, PLAYER_RADIUS,
-  TERRAIN,
 } from './config.js';
 import { clamp } from './utils.js';
 import { Input } from './input.js';
@@ -34,14 +33,54 @@ export const Camera = {
   },
 };
 
+/** Manages the background map iframe parallax effect */
+export const IframeParallax = {
+  _iframe: null,
+
+  /** Store reference to the iframe element */
+  init(iframe) {
+    this._iframe = iframe;
+  },
+
+  /** Update iframe CSS transform to create parallax as player moves */
+  update() {
+    if (!this._iframe) return;
+    const p = WorldState.player;
+
+    // Normalize player position to -0.5 … +0.5 range
+    const nx = (p.x / MAP_WIDTH) - 0.5;
+    const ny = (p.y / MAP_HEIGHT) - 0.5;
+
+    // Shift the iframe: player at center → no offset, at edges → full offset
+    // The iframe is 300% of viewport, positioned at -100%,-100%.
+    // We can shift up to ±100% of viewport before revealing the edge.
+    // Using 80% of that range for smoother feel.
+    const shiftX = -nx * 80; // percentage of viewport width
+    const shiftY = -ny * 80;
+
+    this._iframe.style.transform = `translate(${shiftX}%, ${shiftY}%)`;
+  },
+
+  /** Show the iframe (overworld mode) */
+  show() {
+    if (this._iframe) this._iframe.classList.remove('hidden');
+  },
+
+  /** Hide the iframe (battle mode) */
+  hide() {
+    if (this._iframe) this._iframe.classList.add('hidden');
+  },
+};
+
 export const Overworld = {
   /** Update overworld (player movement, world state) */
   update(dt) {
     this._movePlayer(dt);
     WorldState.update(dt);
+    IframeParallax.update();
   },
 
-  /** Handle player movement with collision */
+  /** Handle player movement */
   _movePlayer(dt) {
     const p = WorldState.player;
     const dir = Input.direction();
@@ -61,19 +100,17 @@ export const Overworld = {
     const nx = p.x + dir.x * speed * dt;
     const ny = p.y + dir.y * speed * dt;
 
-    // Collision check with terrain (check at player radius offsets)
+    // Collision: bounds check only (all terrain is walkable with iframe map)
     const r = PLAYER_RADIUS;
-    // Try X movement
     if (dir.x !== 0) {
       const testX = nx + (dir.x > 0 ? r : -r);
-      if (MapData.isWalkable(testX, p.y - r) && MapData.isWalkable(testX, p.y + r)) {
+      if (MapData.isWalkable(testX, p.y)) {
         p.x = nx;
       }
     }
-    // Try Y movement
     if (dir.y !== 0) {
       const testY = ny + (dir.y > 0 ? r : -r);
-      if (MapData.isWalkable(p.x - r, testY) && MapData.isWalkable(p.x + r, testY)) {
+      if (MapData.isWalkable(p.x, testY)) {
         p.y = ny;
       }
     }
@@ -105,7 +142,7 @@ export const Overworld = {
     if (region && region.safe) {
       // Slow heal in safe zones
       if (p.hp < p.maxHp) {
-        p.hp = Math.min(p.maxHp, p.hp + 0.5); // heal 0.5 HP/frame
+        p.hp = Math.min(p.maxHp, p.hp + 0.5);
       }
     }
   },
