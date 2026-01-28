@@ -4,7 +4,7 @@
 import { Input } from './input.js';
 import { MapData } from './map-data.js';
 import { WorldState } from './world-state.js';
-import { Overworld, Camera } from './overworld.js';
+import { Overworld, Camera, IframeParallax } from './overworld.js';
 import { EncounterDirector } from './encounter.js';
 import { BattleInstance } from './battle.js';
 import { Renderer } from './renderer.js';
@@ -40,6 +40,10 @@ const Game = {
       console.error('Canvas element #game-canvas not found');
       return;
     }
+
+    // Init iframe parallax
+    const iframe = document.getElementById('map-iframe');
+    IframeParallax.init(iframe);
 
     // Init systems
     Input.init();
@@ -164,6 +168,8 @@ const Game = {
   _updateTransitionIn(dt) {
     this.transitionTimer += dt;
     if (this.transitionTimer >= this.transitionDuration) {
+      // Hide map for battle
+      IframeParallax.hide();
       // Create battle instance
       this.battle = new BattleInstance(this.pendingEncounter);
       this.pendingEncounter = null;
@@ -180,6 +186,8 @@ const Game = {
       const result = this.battle.getResult();
       // Apply result to overworld
       WorldState.applyBattleResult(result);
+      // Show map again
+      IframeParallax.show();
       // Begin transition out
       this.battle = null;
       this.state = STATE.TRANSITION_OUT;
