@@ -5,6 +5,7 @@ import {
   TILE_SIZE, MAP_WIDTH, MAP_HEIGHT,
   PLAYER_SPEED, PLAYER_SPRINT_SPEED,
   STAMINA_DRAIN, STAMINA_REGEN, PLAYER_RADIUS,
+  OVERWORLD_MOVEMENT_ENABLED,
 } from './config.js';
 import { clamp } from './utils.js';
 import { Input } from './input.js';
@@ -36,15 +37,21 @@ export const Camera = {
 /** Manages the background map iframe parallax effect */
 export const IframeParallax = {
   _iframe: null,
+  _interactive: false,
 
   /** Store reference to the iframe element */
   init(iframe) {
     this._iframe = iframe;
+    this._interactive = iframe?.dataset?.interactive === 'true';
+    if (this._interactive && this._iframe) {
+      this._iframe.style.transform = 'translate(0, 0)';
+    }
   },
 
   /** Update iframe CSS transform to create parallax as player moves */
   update() {
     if (!this._iframe) return;
+    if (this._interactive) return;
     const p = WorldState.player;
 
     // Normalize player position to -0.5 … +0.5 range
@@ -83,6 +90,12 @@ export const Overworld = {
   /** Handle player movement */
   _movePlayer(dt) {
     const p = WorldState.player;
+    if (!OVERWORLD_MOVEMENT_ENABLED) {
+      p.vx = 0;
+      p.vy = 0;
+      Camera.follow(p.x, p.y);
+      return;
+    }
     const dir = Input.direction();
 
     // Sprint
