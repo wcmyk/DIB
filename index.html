@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIB - Overworld RPG</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+  </div>
+  <div id="loading-screen">
+    <h1>DIB</h1>
+    <p>Loading world...</p>
+  </div>
+  <script type="module">
+    import './js/main.js';
+    // Hide loading screen after modules have loaded.
+    // Module scripts are deferred, so DOM is already ready here.
+    setTimeout(() => {
+      const ls = document.getElementById('loading-screen');
+      if (ls) ls.classList.add('hidden');
+    }, 400);
+  </script>
+</body>
+</html>
