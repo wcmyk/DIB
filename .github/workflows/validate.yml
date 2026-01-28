@@ -1,0 +1,27 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate HTML
+        uses: nicerloop/action-html5-validator@master
+        with:
+          root: '.'
+
+      - name: Check JS syntax
+        run: |
+          echo "Checking JavaScript files for syntax errors..."
+          for f in js/*.js; do
+            node --check "$f" && echo "  OK: $f" || { echo "  FAIL: $f"; exit 1; }
+          done
+          echo "All JS files passed syntax check."
