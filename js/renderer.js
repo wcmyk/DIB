@@ -763,4 +763,33 @@ export const Renderer = {
 
     ctx.restore();
   },
+
+  _drawGrid(ctx, cam) {
+    const startX = Math.floor(cam.x / GRID_SIZE) * GRID_SIZE;
+    const endX = cam.x + cam.width;
+    const startY = Math.floor(cam.y / GRID_SIZE) * GRID_SIZE;
+    const endY = cam.y + cam.height;
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 1;
+
+    for (let x = startX; x <= endX; x += GRID_SIZE) {
+      const sx = x - cam.x;
+      ctx.beginPath();
+      ctx.moveTo(sx, 0);
+      ctx.lineTo(sx, cam.height);
+      ctx.stroke();
+    }
+
+    for (let y = startY; y <= endY; y += GRID_SIZE) {
+      const sy = y - cam.y;
+      ctx.beginPath();
+      ctx.moveTo(0, sy);
+      ctx.lineTo(cam.width, sy);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  },
 };
