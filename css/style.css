@@ -20,19 +20,20 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: #000;
+  transform-origin: center center;
+  transform: scale(var(--game-zoom, 1));
 }
 
 /* ── Map iframe (background layer) ── */
 #map-iframe {
   position: absolute;
-  /* Oversized: 300% in each dimension so we can shift it for parallax */
-  width: 300%;
-  height: 300%;
-  top: -100%;
-  left: -100%;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
   border: 0;
   z-index: 0;
-  pointer-events: none; /* game canvas handles all interaction */
+  pointer-events: auto; /* allow map interaction */
   transition: opacity 0.4s;
 }
 
@@ -50,6 +51,7 @@ html, body {
   height: 100%;
   z-index: 1;
   display: block;
+  pointer-events: none;
 }
 
 /* Loading / splash screen */
