@@ -5,6 +5,8 @@ export const MAP_COLS = 120;
 export const MAP_ROWS = 90;
 export const MAP_WIDTH = MAP_COLS * TILE_SIZE;
 export const MAP_HEIGHT = MAP_ROWS * TILE_SIZE;
+export const GRID_SIZE = TILE_SIZE * 4;
+export const OVERWORLD_MOVEMENT_ENABLED = false;
 
 export const PLAYER_SPEED = 160; // pixels per second
 export const PLAYER_SPRINT_SPEED = 260;

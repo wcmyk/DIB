@@ -4,7 +4,7 @@
 import {
   TILE_SIZE, MAP_COLS, MAP_ROWS,
   TERRAIN, TERRAIN_COLORS, ENEMY_DEFS,
-  ITEM_DEFS, PLAYER_RADIUS,
+  ITEM_DEFS, PLAYER_RADIUS, GRID_SIZE,
 } from './config.js';
 import { MapData } from './map-data.js';
 import { WorldState } from './world-state.js';
@@ -40,6 +40,9 @@ export const Renderer = {
 
     // Clear to transparent — the Genshin map iframe shows through behind us
     ctx.clearRect(0, 0, _canvas.width, _canvas.height);
+
+    // Draw board-game style grid
+    this._drawGrid(ctx, cam);
 
     // Draw enemies
     for (const enemy of WorldState.enemies) {
@@ -242,7 +245,7 @@ export const Renderer = {
     ctx.fillRect(8, _canvas.height - 30, 320, 24);
     ctx.fillStyle = '#888';
     ctx.font = '11px monospace';
-    ctx.fillText('WASD: Move  |  Shift: Sprint  |  I: Inventory', 14, _canvas.height - 22);
+    ctx.fillText('Movement locked  |  I: Inventory', 14, _canvas.height - 22);
 
     // Minimap
     this._drawMinimap(ctx);
@@ -768,5 +771,34 @@ export const Renderer = {
     ctx.font = '12px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('I or Esc: Close  |  W/S: Navigate', w / 2, py + panelH - 16);
+  },
+
+  _drawGrid(ctx, cam) {
+    const startX = Math.floor(cam.x / GRID_SIZE) * GRID_SIZE;
+    const endX = cam.x + cam.width;
+    const startY = Math.floor(cam.y / GRID_SIZE) * GRID_SIZE;
+    const endY = cam.y + cam.height;
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 1;
+
+    for (let x = startX; x <= endX; x += GRID_SIZE) {
+      const sx = x - cam.x;
+      ctx.beginPath();
+      ctx.moveTo(sx, 0);
+      ctx.lineTo(sx, cam.height);
+      ctx.stroke();
+    }
+
+    for (let y = startY; y <= endY; y += GRID_SIZE) {
+      const sy = y - cam.y;
+      ctx.beginPath();
+      ctx.moveTo(0, sy);
+      ctx.lineTo(cam.width, sy);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   },
 };

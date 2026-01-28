@@ -5,6 +5,7 @@ import {
   TILE_SIZE, MAP_WIDTH, MAP_HEIGHT,
   PLAYER_SPEED, PLAYER_SPRINT_SPEED,
   STAMINA_DRAIN, STAMINA_REGEN, PLAYER_RADIUS,
+  OVERWORLD_MOVEMENT_ENABLED,
 } from './config.js';
 import { clamp } from './utils.js';
 import { Input } from './input.js';
@@ -89,6 +90,12 @@ export const Overworld = {
   /** Handle player movement */
   _movePlayer(dt) {
     const p = WorldState.player;
+    if (!OVERWORLD_MOVEMENT_ENABLED) {
+      p.vx = 0;
+      p.vy = 0;
+      Camera.follow(p.x, p.y);
+      return;
+    }
     const dir = Input.direction();
 
     // Sprint
