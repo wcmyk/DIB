@@ -14,7 +14,7 @@ export const STAMINA_DRAIN = 20; // per second while sprinting
 export const STAMINA_REGEN = 12; // per second while not sprinting
 export const PLAYER_RADIUS = 12;
 
-export const ENEMY_WANDER_SPEED = 40;
+export const ENEMY_WANDER_SPEED = 0;
 export const ENEMY_DETECTION_RADIUS = 28;
 export const RESPAWN_COOLDOWN = 30; // seconds before defeated enemy respawns
 
